@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Environment
+.env
+.venv
+env/
+venv/
+
+# Generated Output
+result/
+materials/
+*.pdf
+*.md.tmp
+
+# macOS
+.DS_Store
+
+# R
+.Rhistory

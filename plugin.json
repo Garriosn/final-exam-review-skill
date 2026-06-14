@@ -1,0 +1,8 @@
+{
+  "name": "final-exam-review-plugin",
+  "version": "1.0.0",
+  "description": "A plugin and skill bundle to help students review for final exams by summarizing courseware and generating mock tests.",
+  "skills": [
+    "final-exam-review"
+  ]
+}
