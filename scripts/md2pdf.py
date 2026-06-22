@@ -15,7 +15,8 @@ def install_dependencies():
     """
     dependencies = {
         "markdown": "markdown>=3.5.1",
-        "xhtml2pdf": "xhtml2pdf>=0.2.11"
+        "xhtml2pdf": "xhtml2pdf>=0.2.11",
+        "ziamath": "ziamath>=0.10"
     }
     
     for module_name, pip_package in dependencies.items():
@@ -38,30 +39,42 @@ import markdown
 from xhtml2pdf import pisa
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+import ziamath as zm
 
 # ==========================================
-# 2. MATH RENDERING ENGINE
+# 2. MATH RENDERING ENGINE (SVG)
 # ==========================================
-def render_math_cloud(text):
+def render_math_svg(text):
     """
-    Converts LaTeX math blocks ($...$ and $$...$$) into CodeCogs image tags.
-    This allows xhtml2pdf to download and embed high-quality math images.
+    Converts LaTeX math blocks into offline SVG vector paths using ziamath.
+    Provides pixel-perfect alignment using em-based scaling.
     """
     # Block math $$...$$
     def block_repl(match):
         math_expr = match.group(1).strip()
-        encoded = urllib.parse.quote(math_expr)
-        url = f"https://latex.codecogs.com/png.image?\\dpi{{300}}\\bg{{white}}{encoded}"
-        return f'<div style="text-align: center; margin: 10px 0;"><img src="{url}" /></div>'
+        m = zm.Latex(math_expr, inline=False)
+        w, h = m.getsize()
+        yofst = m.getyofst()
+        w_em = w / 18.0
+        h_em = h / 18.0
+        svg_content = m.svg()
+        style = f'display: block; margin: 12px auto; height: {h_em:.3f}em; width: {w_em:.3f}em;'
+        return svg_content.replace('<svg ', f'<svg style="{style}" ')
         
     text = re.sub(r'\$\$(.+?)\$\$', block_repl, text, flags=re.DOTALL)
     
     # Inline math $...$
     def inline_repl(match):
         math_expr = match.group(1).strip()
-        encoded = urllib.parse.quote(math_expr)
-        url = f"https://latex.codecogs.com/png.image?\\dpi{{300}}\\bg{{white}}{encoded}"
-        return f'<img src="{url}" style="vertical-align: middle; height: 1.5em;" />'
+        m = zm.Latex(math_expr, inline=True)
+        w, h = m.getsize()
+        yofst = m.getyofst()
+        w_em = w / 22.0
+        h_em = h / 22.0
+        y_em = yofst / 22.0
+        svg_content = m.svg()
+        style = f'vertical-align: {y_em:.3f}em; height: {h_em:.3f}em; width: {w_em:.3f}em; display: inline-block;'
+        return svg_content.replace('<svg ', f'<svg style="{style}" ')
         
     text = re.sub(r'\$(.+?)\$', inline_repl, text)
     return text
@@ -69,17 +82,13 @@ def render_math_cloud(text):
 # ==========================================
 # 3. PDF GENERATION LOGIC
 # ==========================================
-def convert_md_to_pdf(md_filepath, pdf_filepath, math_mode='local'):
+def convert_md_to_pdf(md_filepath, pdf_filepath):
     # Read Markdown
     with open(md_filepath, 'r', encoding='utf-8') as f:
         md_text = f.read()
 
-    # Pre-process math if cloud mode is enabled
-    if math_mode == 'cloud':
-        print("Math Mode: Cloud (Converting LaTeX to online images...)")
-        md_text = render_math_cloud(md_text)
-    else:
-        print("Math Mode: Local (Rendering as raw unicode text...)")
+    print("Math Mode: 100% Offline SVG (Rendering LaTeX locally via ziamath...)")
+    md_text = render_math_svg(md_text)
 
     # Convert to HTML
     html_body = markdown.markdown(
@@ -88,14 +97,12 @@ def convert_md_to_pdf(md_filepath, pdf_filepath, math_mode='local'):
     )
     
     # 100% Offline Robust Font Registration
-    # Look for the packaged Songti.ttc in the same directory as this script
     font_path = os.path.join(os.path.dirname(__file__), "Songti.ttc")
     font_face_css = ""
     font_family = "Helvetica, Arial, sans-serif"
     
     if os.path.exists(font_path):
         try:
-            # .ttc files are TrueType Collections. We extract the first font (subfontIndex=0)
             pdfmetrics.registerFont(TTFont('Songti', font_path, subfontIndex=0))
             font_face_css = f"""
             @font-face {{
@@ -171,7 +178,6 @@ def convert_md_to_pdf(md_filepath, pdf_filepath, math_mode='local'):
     base_dir = os.path.dirname(os.path.abspath(md_filepath))
     os.makedirs(os.path.dirname(os.path.abspath(pdf_filepath)), exist_ok=True)
     
-    # link_callback resolves local images correctly
     def link_callback(uri, rel):
         if uri.startswith('http://') or uri.startswith('https://'):
             return uri
@@ -193,10 +199,9 @@ def convert_md_to_pdf(md_filepath, pdf_filepath, math_mode='local'):
 
 if __name__ == "__main__":
     import argparse
-    parser = argparse.ArgumentParser(description="Convert Markdown to PDF (100% Offline with Cloud Math option).")
+    parser = argparse.ArgumentParser(description="Convert Markdown to PDF (100% Offline with SVG Math Rendering).")
     parser.add_argument("--input", required=True, help="Input markdown file path.")
     parser.add_argument("--output", required=True, help="Output PDF file path.")
-    parser.add_argument("--math-mode", choices=['local', 'cloud'], default='local', help="Math rendering strategy.")
     args = parser.parse_args()
     
-    convert_md_to_pdf(args.input, args.output, args.math_mode)
+    convert_md_to_pdf(args.input, args.output)

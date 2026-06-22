@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Markdown to PDF offline conversion pipeline (`md2pdf.py`).
 - Natural-sort Markdown merger script (`md_merger.py`).
 - Integrated `Songti.ttc` for 100% offline Chinese PDF rendering.
-- A/B Math Mode configuration (Cloud LaTeX rendering vs. Offline Unicode).
+- Native SVG LaTeX Math Rendering (`ziamath` integration) eliminating the need for Cloud/Local Math Mode choices.
 - Strict Markdown structural formatting to prevent flattened outlines.
 - Question/Answer separation logic for mock exams.
 

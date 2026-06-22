@@ -23,7 +23,7 @@ An AI Agent Skill designed to act as an extremely powerful teacher. It helps stu
 - 🎓 **Mock Exams**: Randomly selects key points to generate customized mock exams with answers and explanations.
 - 🤖 **Multi-Agent Verification**: Uses a dual-agent system (Generator & Checker) to ensure the accuracy and rigor of all study materials.
 - 🖨️ **Zero-Config PDF Engine**: Automatically compiles the final outlines and exams into beautifully formatted PDFs, complete with Chinese font support.
-- 📐 **Math Mode A/B**: Choose between high-fidelity cloud LaTeX rendering or bulletproof offline text-based math formulas.
+- 📐 **100% Offline LaTeX Math**: Native SVG rendering using `ziamath` enables offline, pixel-perfect, and high-fidelity mathematical formulas (including calculus and matrices) directly inside the PDF without any internet requests.
 
 ---
 
@@ -31,7 +31,7 @@ An AI Agent Skill designed to act as an extremely powerful teacher. It helps stu
 
 - **Agent Framework**: An AI Agent system capable of executing `.md` skills and running `python3` commands in a terminal.
 - **Python Environment**: Python 3.8+ installed on the host machine.
-- **Network**: Internet access is **ONLY** required for the initial run to automatically install Python dependencies (`markdown`, `xhtml2pdf`), or if you select **Math Mode A** (Cloud rendering). Everything else is 100% offline.
+- **Network**: Internet access is **ONLY** required for the initial run to automatically install Python dependencies (`markdown`, `xhtml2pdf`, `ziamath`). Everything else is 100% offline.
 
 ---
 
